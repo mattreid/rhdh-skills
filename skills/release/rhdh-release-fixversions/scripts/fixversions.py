@@ -21,7 +21,11 @@ _scripts_dir = Path(__file__).resolve().parent
 if str(_scripts_dir) not in sys.path:
     sys.path.insert(0, str(_scripts_dir))
 
-from _auth import JiraAuth, resolve_jira_auth  # noqa: E402
+from _auth import (  # noqa: E402
+    JiraAuth,
+    add_deployment_arguments,
+    resolve_jira_auth,
+)
 from _fixversions_core import (  # noqa: E402
     DEFAULT_RECENT_DAYS,
     LIFECYCLE_VALUES,
@@ -172,8 +176,12 @@ def load_by_project(client: JiraVersionClient) -> dict[str, dict[str, dict[str, 
     return by_project
 
 
-def cmd_check(_args: argparse.Namespace) -> int:
-    auth = resolve_jira_auth()
+def _client(args: argparse.Namespace) -> JiraVersionClient:
+    return JiraVersionClient(resolve_jira_auth(staging=args.staging))
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    auth = resolve_jira_auth(staging=args.staging)
     client = JiraVersionClient(auth)
     projects: list[dict[str, Any]] = []
     ok = True
@@ -195,6 +203,7 @@ def cmd_check(_args: argparse.Namespace) -> int:
     payload = {
         "ok": ok,
         "server": auth.server,
+        "deployment": auth.deployment,
         "auth_source": auth.auth_source,
         "projects": projects,
     }
@@ -240,7 +249,7 @@ def _add_recency_args(parser: argparse.ArgumentParser) -> None:
 
 
 def cmd_list(args: argparse.Namespace) -> int:
-    client = JiraVersionClient(resolve_jira_auth())
+    client = _client(args)
     by_project = load_by_project(client)
     recent_names, filter_meta = _recency_names(args, by_project)
     out: dict[str, Any] = {"filter": filter_meta, "projects": {}}
@@ -260,7 +269,7 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 
 def cmd_status(args: argparse.Namespace) -> int:
-    client = JiraVersionClient(resolve_jira_auth())
+    client = _client(args)
     by_project = load_by_project(client)
     print(json.dumps(status_report(by_project, args.version), indent=2))
     return 0
@@ -289,7 +298,7 @@ def _next_z_stream_follow_up(
 
 
 def cmd_close_check(args: argparse.Namespace) -> int:
-    client = JiraVersionClient(resolve_jira_auth())
+    client = _client(args)
     by_project = load_by_project(client)
     release_feature = lookup_release_feature(client, args.version)
     next_z_stream = None
@@ -306,7 +315,7 @@ def cmd_close_check(args: argparse.Namespace) -> int:
 
 
 def cmd_diff(args: argparse.Namespace) -> int:
-    client = JiraVersionClient(resolve_jira_auth())
+    client = _client(args)
     by_project = load_by_project(client)
     recent_names, filter_meta = _recency_names(args, by_project)
     report = diff_report(by_project, names=recent_names)
@@ -363,7 +372,8 @@ def _lookup_release_docs(
 
 
 def cmd_plan(args: argparse.Namespace) -> int:
-    client = JiraVersionClient(resolve_jira_auth())
+    auth = resolve_jira_auth(staging=args.staging)
+    client = JiraVersionClient(auth)
     by_project = load_by_project(client)
     if args.name:
         filter_meta = {"scope": "single", "version": args.name}
@@ -393,7 +403,17 @@ def cmd_plan(args: argparse.Namespace) -> int:
         all_versions=getattr(args, "all_versions", False) or args.name is not None,
         release_docs=release_docs,
     )
-    print(json.dumps({"filter": filter_meta, "operations": operations}, indent=2))
+    print(
+        json.dumps(
+            {
+                "deployment": auth.deployment,
+                "server": auth.server,
+                "filter": filter_meta,
+                "operations": operations,
+            },
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -423,7 +443,7 @@ def cmd_apply(args: argparse.Namespace) -> int:
     plan_path = Path(args.plan)
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     operations = plan.get("operations", plan)
-    client = JiraVersionClient(resolve_jira_auth())
+    client = _client(args)
     by_project = load_by_project(client)
     outcomes: list[dict[str, Any]] = []
 
@@ -495,7 +515,17 @@ def cmd_apply(args: argparse.Namespace) -> int:
                 }
             )
 
-    print(json.dumps({"outcomes": outcomes}, indent=2))
+    auth = resolve_jira_auth(staging=args.staging)
+    print(
+        json.dumps(
+            {
+                "deployment": auth.deployment,
+                "server": auth.server,
+                "outcomes": outcomes,
+            },
+            indent=2,
+        )
+    )
     failed = any(o.get("status") == "failed" for o in outcomes)
     return 1 if failed else 0
 
@@ -510,6 +540,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="JSON output (always emitted; flag accepted for parity with release.py)",
     )
+    add_deployment_arguments(common)
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser(

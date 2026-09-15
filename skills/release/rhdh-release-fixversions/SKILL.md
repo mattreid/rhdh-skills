@@ -11,8 +11,9 @@ description: >-
   keys; ordinary Jira issue work is a different skill.
 compatibility: >-
   Python 3.9+ and uv; Jira REST via the invoker's API token (JIRA_API_TOKEN,
-  JIRA_EMAIL, or .jira-token next to acli). Administer Projects on RHIDP,
-  RHDHPLAN, and RHDHBUGS.
+  JIRA_EMAIL, or .jira-token next to acli). Staging: --staging with
+  JIRA_STAGING_URL (same JIRA_API_TOKEN as production; JIRA_USE_STAGING=true).
+  Administer Projects on RHIDP, RHDHPLAN, and RHDHBUGS.
 ---
 
 # RHDH release fix versions
@@ -37,10 +38,13 @@ uv run scripts/fixversions.py check --json
 
 Load `workflows/sync-fixversions.md`. Load `references/version-fields.md` when
 metadata disagrees and you need field semantics or the canonical-source rule.
+Load `references/staging-jira.md` when the human wants staging credentials or
+`--staging` on the CLI.
 
 | Intent | CLI |
 |---|---|
 | Verify auth and project access | `uv run scripts/fixversions.py check --json` |
+| Try staging before production | add `--staging` to any command (including `apply`) |
 | List recent versions with lifecycle (default 365d) | `uv run scripts/fixversions.py list --json` |
 | Lifecycle for one version across projects | `uv run scripts/fixversions.py status VERSION --json` |
 | Before closing the release Feature | `uv run scripts/fixversions.py close-check VERSION --json` |
@@ -55,6 +59,12 @@ metadata disagrees and you need field semantics or the canonical-source rule.
 Run `check` before any write. It never prints credentials. When auth is missing,
 stop and tell the human to run `/setup-rhdh-skills jira`. When a project returns
 forbidden, stop — the invoker lacks Administer Projects.
+
+Pass **`--staging`** on any subcommand to target staging Jira instead of
+production (`deployment` in `check` JSON is `staging`). Set **`JIRA_STAGING_URL`**
+to the staging site; reuse production `JIRA_EMAIL` and `JIRA_API_TOKEN`. Optional
+`JIRA_STAGING_EMAIL` or `JIRA_STAGING_TOKEN` when staging differs. Set
+`JIRA_USE_STAGING=true` to avoid passing `--staging` on every command.
 
 `acli` cannot create or delete fix versions. This skill uses Jira REST with the
 invoker's token at run time. Credentials stay in the environment or token file —

@@ -11,6 +11,10 @@ cd skills/release/rhdh-release-fixversions
 Prefer `--json` on every command (output is JSON either way; the flag matches
 `release.py` usage).
 
+To try against **staging** first, export `JIRA_STAGING_URL` (same API token as
+production), then add `--staging` to each command (including `apply`).
+`check` JSON includes `deployment`: `staging`.
+
 ## 1. Capability check
 
 ```bash
