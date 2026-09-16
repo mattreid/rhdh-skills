@@ -99,12 +99,18 @@ with `/rhdh-platform-lifecycle` when the API lookup fails or is ambiguous.
 
 ## Boundary with the neighbouring skills
 
-- Release milestone dates and the RHDHPLAN release Feature are read through the
-  release schedule skill.
+- ADF milestone date extraction uses the shared `adf_milestones` module from
+  `rhdh-jira-api` (requiresSkills dependency). The release Feature lookup and
+  status helpers are local to this skill because they use the REST client, not
+  `acli`.
 - Open-issue counts per fix version are read through the release status skill.
 - Setting fix version on issues is issue update work; automation rules are in the
   Jira API reference skill.
-- RHDHSUPP is out of scope — only RHIDP, RHDHPLAN, and RHDHBUGS stay in sync.
+- Version CRUD uses the Jira REST API directly because `acli` has no version
+  subcommand. Auth follows the exception documented in `rest-api-fallback.md`.
+- In-scope projects are defined in `rhdh-jira-projects.md` under `rhdh-context`.
+  RHDHSUPP is excluded from fix-version sync — only RHIDP, RHDHPLAN, and
+  RHDHBUGS stay in sync.
 
 ## Completion
 

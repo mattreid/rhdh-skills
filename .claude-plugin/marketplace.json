@@ -54,6 +54,7 @@
         "./skills/release/rhdh-release-status",
         "./skills/release/rhdh-release-teams",
         "./skills/release/rhdh-release-fixversions",
+        "./skills/reference/rhdh-jira-api",
         "./skills/reference/mutation-gate",
         "./skills/release/rhdh-smoke-tests",
         "./skills/release/rhdh-test-plan-review"
