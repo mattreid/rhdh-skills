@@ -134,6 +134,6 @@ Report each apply outcome. Remaining drift is incomplete work.
 
 | Request | Invoke by name |
 |---|---|
-| When is Code Freeze? | Release schedule skill |
-| How many open issues on fix version 1.11? | Release status skill |
-| Set fix version on an issue key | Jira update skill |
+| When is Code Freeze? | `/rhdh-release-schedule` |
+| How many open issues on fix version 1.11? | `/rhdh-release-status` |
+| Set fix version on an issue key | `/rhdh-jira-update` |

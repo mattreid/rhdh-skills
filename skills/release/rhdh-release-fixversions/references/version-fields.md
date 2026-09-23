@@ -79,8 +79,9 @@ Before `plan` or `ensure` builds create/update operations, the CLI looks up the
 matching **RHDHPLAN release Feature** (`component = Release`, summary contains
 the version, for example `RHDH 1.9.8 Release`) **only when the canonical
 startDate or releaseDate is still empty** (or the version is being created from
-scratch). Versions that already have both dates skip the lookup. Pass
-`--no-release-doc` to skip all lookups.
+scratch). It parses the milestone table in that issue's description — the same
+source `/rhdh-release-schedule` uses. Versions that already have both dates skip
+the lookup. Pass `--no-release-doc` to skip all lookups.
 
 When `startDate` or `releaseDate` on the target metadata is still empty:
 

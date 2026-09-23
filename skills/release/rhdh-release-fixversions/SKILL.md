@@ -117,8 +117,9 @@ with `/rhdh-platform-lifecycle` when the API lookup fails or is ambiguous.
 - ADF milestone date extraction uses the shared `adf_milestones` module from
   `rhdh-jira-api` (requiresSkills dependency). The release Feature lookup and
   status helpers are local to this skill because they use the REST client, not
-  `acli`.
-- Open-issue counts per fix version are read through the release status skill.
+  `acli`. Milestone dates for a version also come from `/rhdh-release-schedule`
+  when the human asks for the calendar rather than fix-version CRUD.
+- Open-issue counts per fix version are read through `/rhdh-release-status`.
 - Setting fix version on issues is issue update work; automation rules are in the
   Jira API reference skill.
 - Version CRUD uses the Jira REST API directly because `acli` has no version
