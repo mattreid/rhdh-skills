@@ -82,7 +82,7 @@ Path-to-component signals:
 | `plugins/rbac/`, `rbac-backend` | RBAC |
 | `plugins/tekton/` | Tekton |
 | `plugins/topology/` | Topology |
-| `plugins/lightspeed/` | Lightspeed |
+| `workspaces/intelligent-assistant/`, `intelligent-assistant/` | Intelligent-Assistant |
 | `plugins/bulk-import/` | Bulk Import |
 | `packages/backend/`, `packages/app/` | Build |
 | `docker/`, `Dockerfile`, `Containerfile` | Build |
