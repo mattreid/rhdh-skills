@@ -325,7 +325,6 @@ def compute_plan(
     by_project: dict[str, dict[str, dict[str, Any]]],
     *,
     prune: bool = False,
-    only_name: str | None = None,
     only_names: set[str] | None = None,
     override_meta: dict[str, Any] | None = None,
     within_days: int = DEFAULT_RECENT_DAYS,
@@ -337,12 +336,10 @@ def compute_plan(
 
     Default scope is unreleased versions only. Pass include_released for the
     recent window (unreleased plus recently dated GA), or all_versions for the
-    full inventory. only_name / only_names always plan those versions.
+    full inventory. only_names always plans those versions.
     """
     names = collect_names(by_project)
     named = set(only_names or ())
-    if only_name is not None:
-        named.add(only_name)
     if named:
         names = named
     elif all_versions:

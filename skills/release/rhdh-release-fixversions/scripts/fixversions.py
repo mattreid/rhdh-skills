@@ -176,6 +176,7 @@ class JiraVersionClient:
     def my_permissions(
         self,
         project_key: str,
+        *,
         permissions: str = "ADMINISTER_PROJECTS,BROWSE_PROJECTS",
     ) -> dict[str, bool]:
         result = self._request(
@@ -238,7 +239,7 @@ def _is_permission_error(message: str) -> bool:
     )
 
 
-def build_check_project_row(
+def _build_check_project_row(
     project: str,
     *,
     version_count: int,
@@ -263,7 +264,7 @@ def build_check_project_row(
     return row
 
 
-def refuse_apply_outcomes(operations: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _refuse_apply_outcomes(operations: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Skip every plan op when Administer Projects is missing."""
     return [
         {
@@ -291,7 +292,7 @@ def cmd_check(args: argparse.Namespace) -> int:
             indexed = index_by_name(versions)
             administer = bool(write_access["projects"].get(project, {}).get("administer_projects"))
             browse = bool(write_access["projects"].get(project, {}).get("browse_projects"))
-            entry = build_check_project_row(
+            entry = _build_check_project_row(
                 project,
                 version_count=len(versions),
                 lifecycle_counts=count_by_lifecycle(indexed),
@@ -329,10 +330,10 @@ def _filter_by_lifecycle(
 
 def _recency_names(
     args: argparse.Namespace, by_project: dict[str, dict[str, dict[str, Any]]]
-) -> tuple[set[str] | None, dict[str, str]]:
+) -> tuple[set[str], dict[str, str]]:
     """Resolve version name scope for list/diff/plan.
 
-    Default: unreleased only. --include-released: recent window (legacy).
+    Default: unreleased only. --include-released: recent GA window.
     --all-versions: full inventory. Named ensure/plan --name bypasses this.
     """
     if getattr(args, "all_versions", False):
@@ -495,13 +496,14 @@ def _parse_named_versions(args: argparse.Namespace) -> set[str] | None:
 
 
 def _plan_version_names(
-    args: argparse.Namespace, by_project: dict[str, dict[str, dict[str, Any]]]
+    args: argparse.Namespace,
+    by_project: dict[str, dict[str, dict[str, Any]]],
+    named: set[str] | None = None,
 ) -> set[str]:
-    named = _parse_named_versions(args)
     if named:
         return named
     names, _ = _recency_names(args, by_project)
-    return names or set()
+    return names
 
 
 def _lookup_release_docs(
@@ -530,7 +532,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
     else:
         _, filter_meta = _recency_names(args, by_project)
 
-    plan_names = _plan_version_names(args, by_project)
+    plan_names = _plan_version_names(args, by_project, named)
     release_docs: dict[str, dict[str, Any]] = {}
     if not args.no_release_doc:
         needing_docs = versions_needing_release_docs(by_project, plan_names)
@@ -608,7 +610,7 @@ def cmd_apply(args: argparse.Namespace) -> int:
     client = JiraVersionClient(auth)
     write_access = _write_access_report(client)
     if not write_access["can_write"]:
-        outcomes = refuse_apply_outcomes(operations)
+        outcomes = _refuse_apply_outcomes(operations)
         print(
             json.dumps(
                 {

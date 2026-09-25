@@ -222,7 +222,7 @@ def test_ensure_creates_everywhere_when_absent(core):
     by_project = {"RHIDP": {}, "RHDHPLAN": {}, "RHDHBUGS": {}}
     ops = core.compute_plan(
         by_project,
-        only_name="2.0.0",
+        only_names={"2.0.0"},
         override_meta={"releaseDate": "2026-06-01"},
     )
     assert len(ops) == 3
@@ -405,7 +405,7 @@ def test_compute_plan_uses_release_doc_for_new_version(core):
     }
     ops = core.compute_plan(
         by_project,
-        only_name="2.2.0",
+        only_names={"2.2.0"},
         release_docs=release_docs,
     )
     assert len(ops) == 3
@@ -563,7 +563,7 @@ def cli():
 
 
 def test_check_project_row_read_only_vs_pass(cli):
-    read_only = cli.build_check_project_row(
+    read_only = cli._build_check_project_row(
         "RHIDP",
         version_count=10,
         lifecycle_counts={"archived": 0, "released": 5, "unreleased": 5},
@@ -574,7 +574,7 @@ def test_check_project_row_read_only_vs_pass(cli):
     assert "warning" in read_only
     assert read_only["administer_projects"] is False
 
-    write_ok = cli.build_check_project_row(
+    write_ok = cli._build_check_project_row(
         "RHIDP",
         version_count=10,
         lifecycle_counts={"archived": 0, "released": 5, "unreleased": 5},
@@ -590,7 +590,7 @@ def test_refuse_apply_outcomes_skips_all(cli):
         {"action": "create", "project": "RHIDP", "name": "1.10.6"},
         {"action": "update", "project": "RHDHPLAN", "name": "2.2.0"},
     ]
-    outcomes = cli.refuse_apply_outcomes(ops)
+    outcomes = cli._refuse_apply_outcomes(ops)
     assert len(outcomes) == 2
     assert all(o["status"] == "skipped" for o in outcomes)
     assert "Administer Projects" in outcomes[0]["reason"]
