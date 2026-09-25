@@ -57,6 +57,8 @@
         "./skills/reference/rhdh-jira-api",
         "./skills/reference/mutation-gate",
         "./skills/release/rhdh-release-sos",
+        "./skills/release/rhdh-release-component-audit",
+        "./skills/release/rhdh-release-component-manage",
         "./skills/release/rhdh-smoke-tests",
         "./skills/release/rhdh-test-plan-review"
       ]

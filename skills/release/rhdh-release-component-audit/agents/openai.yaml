@@ -1,0 +1,3 @@
+interface:
+  display_name: "RHDH Release Component Audit"
+  short_description: "List and audit Jira components vs the catalog"

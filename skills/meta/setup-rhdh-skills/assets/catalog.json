@@ -346,6 +346,25 @@
       "requiresExternalSkills": []
     },
     {
+      "name": "rhdh-release-component-audit",
+      "category": "release",
+      "invocation": "model",
+      "requiresSkills": [
+        "rhdh-jira-api"
+      ],
+      "requiresExternalSkills": []
+    },
+    {
+      "name": "rhdh-release-component-manage",
+      "category": "release",
+      "invocation": "model",
+      "requiresSkills": [
+        "rhdh-jira-api",
+        "mutation-gate"
+      ],
+      "requiresExternalSkills": []
+    },
+    {
       "name": "rhdh-release-sos",
       "category": "release",
       "invocation": "model",

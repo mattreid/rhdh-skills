@@ -1,0 +1,3 @@
+interface:
+  display_name: "RHDH Release Component Manage"
+  short_description: "Create, rename, or delete Jira components and update the catalog"
