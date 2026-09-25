@@ -60,16 +60,17 @@ acli jira workitem view RHIDP-123 --web
 > link (`customfield_10018`) in one update through the authenticated adapter in
 > [rest-api-fallback.md](rest-api-fallback.md).
 >
-> **RHDHBUGS Bug exception:** Affects Version (`versions`) is required at create. There is no
-> `--version` flag — put `additionalAttributes.versions` (e.g. `[{"name": "1.10.0"}]`) in
-> `--from-json`, or create via the Atlassian MCP with that field set. Create without it fails with
-> `Affects versions is required`.
+> **RHDHBUGS Bug exception:** Affects Version is required at create (see [fields.md](fields.md)).
+> There is no `--version` flag. Put `versions` (and the ADF `description`) inside a `--from-json`
+> payload — do **not** combine `--from-json` with `--description-file` on the same create.
+> `acli jira workitem create --generate-json` prints a starter shape. Create without `versions`
+> fails with `Affects versions is required`.
 
 ```bash
 # Basic creation
 acli jira workitem create --project RHIDP --type Story --summary "Implement auth plugin" --description "As a user..." --assignee "@me"
 
-# RHDHBUGS Bug — use --from-json so Affects Version is present at create
+# RHDHBUGS Bug — single --from-json file (versions + ADF description inside JSON)
 acli jira workitem create --from-json bug-create.json
 
 # With parent (sub-task or child of epic)
@@ -81,7 +82,7 @@ acli jira workitem create --from-json workitem.json --project RHIDP --type Epic
 # Generate JSON template
 acli jira workitem create --generate-json
 
-# From description file
+# From description file (Stories/Features/etc. — not for RHDHBUGS Bug when versions are required)
 acli jira workitem create --project RHIDP --type Story --summary "New feature" --description-file story.txt
 ```
 
@@ -256,10 +257,10 @@ acli jira filter get --id 10001
 Jira Cloud's editor is ADF-native. Plain text, Markdown, and Jira wiki markup (`h1.`, `*bold*`)
 all render as literal characters when placed inside ADF text nodes — including a hand-built ADF
 doc that only wraps Markdown paragraphs. Fill a wiki markup template, convert it with
-`scripts/jira-wiki-to-adf.py <input.txt> <output.json>`, then pass the result via
-`--description-file`. Both `create` and `edit` accept ADF JSON that way. Callers must use this
-helper (via `/rhdh-jira-api`); do not invent ADF from Markdown. When reading, `--json` returns
-ADF too — don't try to round-trip it.
+`scripts/jira-wiki-to-adf.py <input.txt> <output.json>`. For ordinary creates/edits, pass that ADF
+via `--description-file`. For **RHDHBUGS Bug** create, embed the same ADF object as the JSON
+`description` field and use `--from-json` alone (Affects Version must be in that file). Do not
+invent ADF from Markdown. When reading, `--json` returns ADF too — don't try to round-trip it.
 
 ## Custom Fields and `--enrich`
 
