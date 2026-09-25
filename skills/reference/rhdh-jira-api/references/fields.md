@@ -39,7 +39,7 @@ cf[10785] is EMPTY
 | Field | JQL Name | Notes |
 |-------|----------|-------|
 | Fix Version | `fixVersion` | Version targeting. `fixVersion = '1.10.0'` |
-| Affects Version | `affectedVersion` | Used in RHDHBUGS for bug version tracking. |
+| Affects Version | `affectedVersion` (API field `versions`) | **Required on RHDHBUGS Bug create** — the project createmeta rejects create without it. Name the RHDH release that exhibits the defect (e.g. `1.10.0`). Not the same as Fix Version. |
 | Components | `component` | JQL-filterable: `component = 'Documentation'`. Not available via `--fields` — use `--json`. |
 | Parent | `parent` | Native hierarchy: sub-task → parent, epic → feature. `parent = RHDHPLAN-382` |
 | Security Level | `security` | Present on RHIDP/RHDHPLAN (`"Red Hat Employee"`), typically null on RHDHBUGS/RHDHSUPP. **NOT JQL-filterable** — `security is not EMPTY` returns parse error. |

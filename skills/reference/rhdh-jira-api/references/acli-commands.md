@@ -59,13 +59,18 @@ acli jira workitem view RHIDP-123 --web
 > Create the issue first, then set priority, components, size (`customfield_10795`), and parent
 > link (`customfield_10018`) in one update through the authenticated adapter in
 > [rest-api-fallback.md](rest-api-fallback.md).
+>
+> **RHDHBUGS Bug exception:** Affects Version (`versions`) is required at create. There is no
+> `--version` flag — put `additionalAttributes.versions` (e.g. `[{"name": "1.10.0"}]`) in
+> `--from-json`, or create via the Atlassian MCP with that field set. Create without it fails with
+> `Affects versions is required`.
 
 ```bash
 # Basic creation
 acli jira workitem create --project RHIDP --type Story --summary "Implement auth plugin" --description "As a user..." --assignee "@me"
 
-# With labels
-acli jira workitem create --project RHDHBUGS --type Bug --summary "Login fails" --label "RHDH-Customer,ci-fail"
+# RHDHBUGS Bug — use --from-json so Affects Version is present at create
+acli jira workitem create --from-json bug-create.json
 
 # With parent (sub-task or child of epic)
 acli jira workitem create --project RHIDP --type Task --summary "Write tests" --parent RHIDP-12968
@@ -248,11 +253,13 @@ acli jira filter get --id 10001
 
 ### Formatted descriptions need ADF
 
-Jira Cloud's editor is ADF-native. Plain text and Jira wiki markup (`h1.`, `*bold*`) both render as
-literal characters in the UI, so a description file written in wiki markup ships broken. Fill a wiki
-markup template, convert it with `scripts/jira-wiki-to-adf.py <input.txt> <output.json>`, then pass
-the result via `--description-file`. Both `create` and `edit` accept ADF JSON that way. When
-reading, `--json` returns ADF too — don't try to round-trip it.
+Jira Cloud's editor is ADF-native. Plain text, Markdown, and Jira wiki markup (`h1.`, `*bold*`)
+all render as literal characters when placed inside ADF text nodes — including a hand-built ADF
+doc that only wraps Markdown paragraphs. Fill a wiki markup template, convert it with
+`scripts/jira-wiki-to-adf.py <input.txt> <output.json>`, then pass the result via
+`--description-file`. Both `create` and `edit` accept ADF JSON that way. Callers must use this
+helper (via `/rhdh-jira-api`); do not invent ADF from Markdown. When reading, `--json` returns
+ADF too — don't try to round-trip it.
 
 ## Custom Fields and `--enrich`
 

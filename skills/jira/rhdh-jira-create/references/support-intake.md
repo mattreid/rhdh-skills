@@ -48,16 +48,15 @@ communication stays controlled by the support team.
 ## Product defect: RHDHSUPP → RHDHBUGS
 
 Create a Bug in RHDHBUGS with Priority, Component (`Documentation` for doc
-defects), and the Bug template filled with real reproduction steps. Link it to
-the customer case through SFDC Cases Links, then comment on the RHDHSUPP issue
-with the RHDHBUGS key so the customer learns when the fix lands.
+defects), **Affects Version** (required at create — the RHDH release that shows
+the defect), and the Bug template filled with real reproduction steps. Link it
+to the customer case through SFDC Cases Links, then comment on the RHDHSUPP
+issue with the RHDHBUGS key so the customer learns when the fix lands.
 
 ```bash
-acli jira workitem create --project RHDHBUGS --type Bug \
-  --summary "Login fails when SSO token expires during session" \
-  --description-file "$BUG_ADF" \
-  --label "RHDH-Customer" \
-  --assignee "@me"
+# Affects Version must be on the create payload (from-json additionalAttributes.versions);
+# plain --description-file create without versions fails on RHDHBUGS.
+acli jira workitem create --from-json "$BUG_CREATE_JSON"
 
 acli jira workitem link create --out RHDHSUPP-456 --in RHDHBUGS-789 --type "Related" --yes
 
